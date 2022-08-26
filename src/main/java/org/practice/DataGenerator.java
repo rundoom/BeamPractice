@@ -17,7 +17,7 @@ public class DataGenerator {
                 random.nextLong(),
                 random.nextLong(),
                 random.nextLong(),
-                MeasurementType.values()[random.nextInt(4)],
+                MeasurementType.values()[MeasurementType.values().length],
                 random.nextDouble()
         );
     }
