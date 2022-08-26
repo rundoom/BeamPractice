@@ -26,7 +26,7 @@ public class DataGenerator {
 
     public List<MeasurementEvent> generateNEvents(int eventCount) {
         List<MeasurementEvent> list = new ArrayList<>();
-        for (int i = 0; i < 100; i++) list.add(generateEvent());
+        for (int i = 0; i < eventCount; i++) list.add(generateEvent());
         return list;
     }
 }
