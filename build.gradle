@@ -10,6 +10,9 @@ repositories {
 }
 
 dependencies {
+    implementation 'org.apache.beam:beam-sdks-java-core:2.41.0'
+    implementation 'org.apache.beam:beam-runners-direct-java:2.41.0'
+
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
 }
