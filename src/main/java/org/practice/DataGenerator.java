@@ -3,6 +3,8 @@ package org.practice;
 import org.practice.model.MeasurementEvent;
 import org.practice.model.MeasurementType;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class DataGenerator {
@@ -20,5 +22,11 @@ public class DataGenerator {
                 MeasurementType.values()[MeasurementType.values().length],
                 random.nextDouble()
         );
+    }
+
+    public List<MeasurementEvent> generateNEvents(int eventCount) {
+        List<MeasurementEvent> list = new ArrayList<>();
+        for (int i = 0; i < 100; i++) list.add(generateEvent());
+        return list;
     }
 }
