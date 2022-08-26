@@ -16,16 +16,16 @@ public class DataGenerator {
 
     public MeasurementEvent generateEvent() {
         return new MeasurementEvent(
-                random.nextInt(Integer.SIZE -1),
-                random.nextInt(Integer.SIZE -1),
-                random.nextInt(Integer.SIZE -1),
+                random.nextInt(Integer.MAX_VALUE),
+                random.nextInt(Integer.MAX_VALUE),
+                random.nextInt(Integer.MAX_VALUE),
                 MeasurementType.values()[random.nextInt(MeasurementType.values().length)],
-                random.nextDouble()
+                random.nextDouble() * 10000
         );
     }
 
     public List<MeasurementEvent> generateNEvents(int eventCount) {
-        List<MeasurementEvent> list = new ArrayList<>();
+        List<MeasurementEvent> list = new ArrayList<>(eventCount);
         for (int i = 0; i < eventCount; i++) list.add(generateEvent());
         return list;
     }
