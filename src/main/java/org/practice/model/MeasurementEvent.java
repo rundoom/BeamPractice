@@ -34,4 +34,15 @@ public class MeasurementEvent {
     public double getValue() {
         return value;
     }
+
+    @Override
+    public String toString() {
+        return "MeasurementEvent{" +
+                "timestamp=" + timestamp +
+                ", userId=" + userId +
+                ", location=" + location +
+                ", measurementType=" + measurementType +
+                ", value=" + value +
+                '}';
+    }
 }
