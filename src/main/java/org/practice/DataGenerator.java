@@ -16,9 +16,9 @@ public class DataGenerator {
 
     public MeasurementEvent generateEvent() {
         return new MeasurementEvent(
-                random.nextLong(),
-                random.nextLong(),
-                random.nextLong(),
+                random.nextInt(Integer.SIZE -1),
+                random.nextInt(Integer.SIZE -1),
+                random.nextInt(Integer.SIZE -1),
                 MeasurementType.values()[random.nextInt(MeasurementType.values().length)],
                 random.nextDouble()
         );

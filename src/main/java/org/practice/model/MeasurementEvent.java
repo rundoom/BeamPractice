@@ -1,13 +1,18 @@
 package org.practice.model;
 
-public class MeasurementEvent {
-    long timestamp;
-    long userId;
-    long location;
+import org.apache.beam.sdk.schemas.JavaBeanSchema;
+import org.apache.beam.sdk.schemas.annotations.DefaultSchema;
+
+import java.io.Serializable;
+
+public class MeasurementEvent implements Serializable {
+    int timestamp;
+    int userId;
+    int location;
     MeasurementType measurementType;
     double value;
 
-    public MeasurementEvent(long timestamp, long userId, long location, MeasurementType measurementType, double value) {
+    public MeasurementEvent(int timestamp, int userId, int location, MeasurementType measurementType, double value) {
         this.timestamp = timestamp;
         this.userId = userId;
         this.location = location;
