@@ -1,4 +1,6 @@
+import org.apache.beam.sdk.io.Read;
 import org.apache.beam.sdk.io.TextIO;
+import org.apache.beam.sdk.io.UnboundedSource;
 import org.apache.beam.sdk.schemas.transforms.Group;
 import org.apache.beam.sdk.transforms.*;
 import org.apache.beam.sdk.transforms.windowing.FixedWindows;
@@ -36,20 +38,6 @@ public class BeamTests {
         PCollection<MeasurementEvent> eventPCollection = beamManager.getPipeline().apply(Create.of(events));
 
         eventPCollection
-                .apply(Group.<MeasurementEvent>globally().aggregateField("value", Sum.ofDoubles(), "avgValue"))
-                .apply(ToString.elements())
-                .apply(TextIO.write().to("yooo").withSuffix(".txt"));
-
-        beamManager.getPipeline().run().waitUntilFinish();
-    }
-
-    @Test
-    void testBeam2() {
-        var events = generator.generateNEvents(100000);
-        PCollection<MeasurementEvent> eventPCollection = beamManager.getPipeline().apply(Create.of(events));
-
-        eventPCollection
-                .apply(Window.<MeasurementEvent>into(FixedWindows.of(Duration.millis(1))))
                 .apply(Group.<MeasurementEvent>globally().aggregateField("value", Sum.ofDoubles(), "avgValue"))
                 .apply(ToString.elements())
                 .apply(TextIO.write().to("yooo").withSuffix(".txt"));
