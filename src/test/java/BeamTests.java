@@ -27,10 +27,10 @@ public class BeamTests {
 
         eventPCollection.apply(ToString.elements())
                 .apply(MapElements.into(TypeDescriptors.strings()).via((String word) -> word + "uuuf"))
-                .apply(TextIO.write().to("out").withSuffix(".txt"));
+                .apply(TextIO.write().to("outdata/out").withSuffix(".txt"));
 
         eventPCollection.apply(ToString.elements())
-                .apply(TextIO.write().to("yooo").withSuffix(".txt"));
+                .apply(TextIO.write().to("outdata/yooo").withSuffix(".txt"));
 
         beamManager.getPipeline().run().waitUntilFinish();
     }
@@ -43,7 +43,7 @@ public class BeamTests {
         eventPCollection
                 .apply(Group.<MeasurementEvent>globally().aggregateField("value", Sum.ofDoubles(), "sumValue"))
                 .apply(ToString.elements())
-                .apply(TextIO.write().to("yooo").withSuffix(".txt"));
+                .apply(TextIO.write().to("outdata/out").withSuffix(".txt"));
 
         beamManager.getPipeline().run().waitUntilFinish();
     }
@@ -54,10 +54,10 @@ public class BeamTests {
         PCollection<MeasurementEvent> eventPCollection = beamManager.getPipeline().apply(Create.of(events));
 
         eventPCollection
-                .apply(MapElements.into(TypeDescriptor.of(Double.class)).via(event -> event.getValue()))
+                .apply(MapElements.into(TypeDescriptor.of(Double.class)).via(event -> event.value))
                 .apply(Mean.globally())
                 .apply(ToString.elements())
-                .apply(TextIO.write().to("yooo").withSuffix(".txt"));
+                .apply(TextIO.write().to("outdata/out").withSuffix(".txt"));
 
         beamManager.getPipeline().run().waitUntilFinish();
     }
