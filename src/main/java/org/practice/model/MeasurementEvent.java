@@ -1,5 +1,7 @@
 package org.practice.model;
 
+import org.apache.beam.sdk.coders.AvroCoder;
+import org.apache.beam.sdk.coders.DefaultCoder;
 import org.apache.beam.sdk.schemas.JavaBeanSchema;
 import org.apache.beam.sdk.schemas.JavaFieldSchema;
 import org.apache.beam.sdk.schemas.annotations.DefaultSchema;
@@ -9,7 +11,8 @@ import java.io.Serializable;
 import java.text.DecimalFormat;
 
 @DefaultSchema(JavaFieldSchema.class)
-public class MeasurementEvent implements Serializable {
+@DefaultCoder(AvroCoder.class)
+public class MeasurementEvent {
     private int timestamp;
     private int userId;
     private int location;
