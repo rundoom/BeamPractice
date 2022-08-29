@@ -13,7 +13,7 @@ import java.text.DecimalFormat;
 @DefaultSchema(JavaFieldSchema.class)
 @DefaultCoder(AvroCoder.class)
 public class MeasurementEvent {
-    private int timestamp;
+    private long timestamp;
     private int userId;
     private int location;
     private MeasurementType measurementType;
@@ -23,7 +23,7 @@ public class MeasurementEvent {
     private DecimalFormat df = new DecimalFormat("####0.00");
 
 
-    public MeasurementEvent(int timestamp, int userId, int location, MeasurementType measurementType, double value) {
+    public MeasurementEvent(long timestamp, int userId, int location, MeasurementType measurementType, double value) {
         this.timestamp = timestamp;
         this.userId = userId;
         this.location = location;
