@@ -2,21 +2,28 @@ package org.practice.model;
 
 import org.apache.beam.sdk.coders.AvroCoder;
 import org.apache.beam.sdk.coders.DefaultCoder;
-import org.apache.beam.sdk.schemas.JavaBeanSchema;
 import org.apache.beam.sdk.schemas.JavaFieldSchema;
 import org.apache.beam.sdk.schemas.annotations.DefaultSchema;
 import org.apache.beam.sdk.schemas.annotations.SchemaFieldName;
 
-import java.io.Serializable;
 import java.text.DecimalFormat;
+import java.util.Objects;
 
 @DefaultSchema(JavaFieldSchema.class)
 @DefaultCoder(AvroCoder.class)
 public class MeasurementEvent {
-    private long timestamp;
-    private int userId;
-    private int location;
+    @SchemaFieldName("timestamp")
+    public long timestamp;
+
+    @SchemaFieldName("userId")
+    public int userId;
+
+    @SchemaFieldName("location")
+    public int location;
+
+    @SchemaFieldName("measurementType")
     private MeasurementType measurementType;
+
     @SchemaFieldName("value")
     public double value;
 
@@ -35,26 +42,6 @@ public class MeasurementEvent {
 
     }
 
-    public long getTimestamp() {
-        return timestamp;
-    }
-
-    public long getUserId() {
-        return userId;
-    }
-
-    public long getLocation() {
-        return location;
-    }
-
-    public MeasurementType getMeasurementType() {
-        return measurementType;
-    }
-
-    public double getValue() {
-        return value;
-    }
-
     @Override
     public String toString() {
         return "MeasurementEvent{" +
@@ -64,5 +51,18 @@ public class MeasurementEvent {
                 ", measurementType=" + measurementType +
                 ", value=" + df.format(value) +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        MeasurementEvent that = (MeasurementEvent) o;
+        return timestamp == that.timestamp && userId == that.userId && location == that.location && Double.compare(that.value, value) == 0 && measurementType == that.measurementType;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(timestamp, userId, location, measurementType, value);
     }
 }
