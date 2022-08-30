@@ -81,4 +81,32 @@ public class BeamTests {
 
         beamManager.getPipeline().run().waitUntilFinish();
     }
+
+    @Test
+    void testSplitPCollection() {
+        var events = generator.generateNEventsToday(1000);
+        PCollection<MeasurementEvent> eventPCollection = beamManager.getPipeline().apply(Create.of(events))
+                .apply(WithTimestamps.of(kv -> Instant.ofEpochSecond(kv.timestamp)));
+
+        eventPCollection
+                .apply(Window.<MeasurementEvent>into(FixedWindows.of(Duration.standardDays(1))))
+                .apply(MapElements.into(kvs(strings(), doubles())).via(m -> KV.of(m.measurementType.name(), m.value)))
+                .apply(Mean.perKey())
+                .apply(ToString.elements())
+                .apply(TextIO.write().to("outdata/out_by_day").withSuffix(".txt").withNumShards(1));
+
+        eventPCollection
+                .apply(Window.<MeasurementEvent>into(FixedWindows.of(Duration.standardHours(1))))
+                .apply(MapElements.into(kvs(strings(), doubles())).via(m -> KV.of(m.measurementType.name(), m.value)))
+                .apply(Mean.perKey())
+                .apply(ToString.elements())
+                .apply(TextIO.write().to("outdata/out_by_hour").withSuffix(".txt").withNumShards(1));
+
+        eventPCollection
+                .apply(Window.<MeasurementEvent>into(FixedWindows.of(Duration.standardMinutes(1))))
+                .apply(ToString.elements())
+                .apply(TextIO.write().to("outdata/out_pure_data").withSuffix(".txt").withNumShards(1));
+
+        beamManager.getPipeline().run().waitUntilFinish();
+    }
 }
