@@ -22,7 +22,7 @@ public class MeasurementEvent {
     public int location;
 
     @SchemaFieldName("measurementType")
-    private MeasurementType measurementType;
+    public MeasurementType measurementType;
 
     @SchemaFieldName("value")
     public double value;
