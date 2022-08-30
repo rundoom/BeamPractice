@@ -11,10 +11,14 @@ import org.apache.beam.sdk.values.TypeDescriptors;
 import org.apache.kafka.common.serialization.LongDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.joda.time.Duration;
+import org.joda.time.Instant;
 import org.junit.jupiter.api.Test;
 import org.practice.DataGenerator;
 import org.practice.beam.BeamManager;
 import org.practice.model.MeasurementEvent;
+
+import static org.apache.beam.sdk.values.TypeDescriptors.*;
+
 
 public class BeamTests {
     DataGenerator generator = new DataGenerator();
@@ -26,7 +30,7 @@ public class BeamTests {
         PCollection<MeasurementEvent> eventPCollection = beamManager.getPipeline().apply(Create.of(events));
 
         eventPCollection.apply(ToString.elements())
-                .apply(MapElements.into(TypeDescriptors.strings()).via((String word) -> word + "uuuf"))
+                .apply(MapElements.into(strings()).via((String word) -> word + "uuuf"))
                 .apply(TextIO.write().to("outdata/out").withSuffix(".txt"));
 
         eventPCollection.apply(ToString.elements())
@@ -58,6 +62,22 @@ public class BeamTests {
                 .apply(Mean.globally())
                 .apply(ToString.elements())
                 .apply(TextIO.write().to("outdata/out").withSuffix(".txt"));
+
+        beamManager.getPipeline().run().waitUntilFinish();
+    }
+
+    @Test
+    void testMeanWindowed() {
+        var events = generator.generateNEventsToday(1000);
+        PCollection<MeasurementEvent> eventPCollection = beamManager.getPipeline().apply(Create.of(events));
+
+        eventPCollection
+                .apply(WithTimestamps.of(kv -> Instant.ofEpochSecond(kv.timestamp)))
+                .apply(Window.<MeasurementEvent>into(FixedWindows.of(Duration.standardHours(1))))
+                .apply(MapElements.into(kvs(strings(), doubles())).via(m -> KV.of(m.measurementType.name(), m.value)))
+                .apply(Mean.perKey())
+                .apply(ToString.elements())
+                .apply(TextIO.write().to("outdata/out").withSuffix(".txt").withNumShards(1));
 
         beamManager.getPipeline().run().waitUntilFinish();
     }
