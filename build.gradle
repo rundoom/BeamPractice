@@ -15,8 +15,11 @@ repositories {
 dependencies {
     implementation 'org.apache.beam:beam-sdks-java-core:2.41.0'
     implementation 'org.apache.beam:beam-runners-direct-java:2.41.0'
+
     implementation 'org.apache.beam:beam-sdks-java-io-kafka:2.41.0'
     implementation 'org.apache.beam:beam-sdks-java-io-jdbc:2.41.0'
+    implementation 'org.apache.beam:beam-sdks-java-io-redis:2.41.0'
+
     implementation 'io.confluent:kafka-avro-serializer:7.2.1'
     implementation 'org.postgresql:postgresql:42.5.0'
     implementation 'org.slf4j:slf4j-simple:2.0.0'
