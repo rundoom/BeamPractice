@@ -5,11 +5,13 @@ import org.apache.beam.sdk.io.redis.RedisIO;
 import org.apache.beam.sdk.transforms.Create;
 import org.apache.beam.sdk.transforms.MapElements;
 import org.apache.beam.sdk.transforms.Mean;
+import org.apache.beam.sdk.transforms.WithTimestamps;
 import org.apache.beam.sdk.transforms.windowing.FixedWindows;
 import org.apache.beam.sdk.transforms.windowing.Window;
 import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.PCollection;
 import org.joda.time.Duration;
+import org.joda.time.Instant;
 import org.practice.DataGenerator;
 import org.practice.beam.BeamManager;
 import org.practice.model.MeasurementEvent;
@@ -32,8 +34,9 @@ public class RedisAndPostgres implements Serializable {
                 .apply(WithTimestamps.of(kv -> Instant.ofEpochSecond(kv.timestamp)));
 
         writeRawToPostgres(eventPCollection);
-        writeDaysToRedis(eventPCollection);
-        writeHoursToRedis(eventPCollection);
+        writeTimeToRedis(eventPCollection, MeasurementTimeRange.PER_DAY);
+        writeTimeToRedis(eventPCollection, MeasurementTimeRange.PER_HOUR);
+        writeTimeToRedis(eventPCollection, MeasurementTimeRange.PER_MINUTE);
 
         beamManager.getPipeline().run().waitUntilFinish();
     }
@@ -58,11 +61,11 @@ public class RedisAndPostgres implements Serializable {
                 );
     }
 
-    private void writeDaysToRedis(PCollection<MeasurementEvent> eventPCollection) {
+    private void writeTimeToRedis(PCollection<MeasurementEvent> eventPCollection, MeasurementTimeRange timeRange) {
         eventPCollection
-                .apply(Window.into(FixedWindows.of(Duration.standardDays(1))))
+                .apply(Window.into(FixedWindows.of(timeRange.duration)))
                 .apply(MapElements.into(kvs(strings(), doubles())).via(m -> KV.of(
-                        m.measurementType.name() + '_' + "per_day" + '_' + m.userId + '_' + m.location,
+                        m.measurementType.name() + ':' + timeRange.keyPart + ':' + m.userId + ':' + m.location,
                         m.value)
                 ))
                 .apply(Mean.perKey())
@@ -70,15 +73,17 @@ public class RedisAndPostgres implements Serializable {
                 .apply(RedisIO.write().withEndpoint("localhost", 6379));
     }
 
-    private void writeHoursToRedis(PCollection<MeasurementEvent> eventPCollection) {
-        eventPCollection
-                .apply(Window.into(FixedWindows.of(Duration.standardHours(1))))
-                .apply(MapElements.into(kvs(strings(), doubles())).via(m -> KV.of(
-                        m.measurementType.name() + '_' + "per_hour" + '_' + m.userId + '_' + m.location,
-                        m.value)
-                ))
-                .apply(Mean.perKey())
-                .apply(MapElements.into(kvs(strings(), strings())).via(m -> KV.of(m.getKey(), String.valueOf(m.getValue()))))
-                .apply(RedisIO.write().withEndpoint("localhost", 6379));
+    private enum MeasurementTimeRange {
+        PER_MINUTE("per_minute", Duration.standardMinutes(1)),
+        PER_HOUR("per_hour", Duration.standardHours(1)),
+        PER_DAY("per_day", Duration.standardDays(1));
+
+        MeasurementTimeRange(String keyPart, Duration duration) {
+            this.keyPart = keyPart;
+            this.duration = duration;
+        }
+
+        private final String keyPart;
+        private final Duration duration;
     }
 }
