@@ -38,7 +38,7 @@ public class DataGenerator {
 
     public List<MeasurementEvent> generateNEventsToday(int eventCount) {
         DateRange todayTimeRange = getTodayTimeRange();
-        return generateNEvents(eventCount, getTodayTimeRange().getStartDate(), getTodayTimeRange().getEndDate());
+        return generateNEvents(eventCount, todayTimeRange.getStartDate(), todayTimeRange.getEndDate());
     }
 
     public List<MeasurementEvent> generateNEvents(int eventCount, long minTime, long maxTime) {
@@ -54,7 +54,7 @@ public class DataGenerator {
         );
     }
 
-    private static class DateRange{
+    private static class DateRange {
         private final long startDate;
         private final long endDate;
 
