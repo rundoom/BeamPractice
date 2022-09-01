@@ -28,7 +28,8 @@ public class RedisAndPostgres implements Serializable {
 
     void writeToRedis() {
         var events = generator.generateNEventsToday(1000);
-        PCollection<MeasurementEvent> eventPCollection = beamManager.getPipeline().apply(Create.of(events));
+        PCollection<MeasurementEvent> eventPCollection = beamManager.getPipeline().apply(Create.of(events))
+                .apply(WithTimestamps.of(kv -> Instant.ofEpochSecond(kv.timestamp)));
 
         writeRawToPostgres(eventPCollection);
         writeDaysToRedis(eventPCollection);
