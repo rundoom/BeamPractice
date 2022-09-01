@@ -17,6 +17,8 @@ import org.practice.beam.BeamManager;
 import org.practice.model.MeasurementEvent;
 
 import java.io.Serializable;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 
 import static org.apache.beam.sdk.values.TypeDescriptors.*;
 
@@ -65,7 +67,7 @@ public class RedisAndPostgres implements Serializable {
         eventPCollection
                 .apply(Window.into(FixedWindows.of(timeRange.duration)))
                 .apply(MapElements.into(kvs(strings(), doubles())).via(m -> KV.of(
-                        m.measurementType.name() + ':' + timeRange.keyPart + ':' + m.userId + ':' + m.location,
+                        m.measurementType.name() + ':' + timeRange.keyPart + ':' + m.location + ':' + timeRange.formatTimestamp(m.timestamp * 1000),
                         m.value)
                 ))
                 .apply(Mean.perKey())
@@ -74,16 +76,22 @@ public class RedisAndPostgres implements Serializable {
     }
 
     private enum MeasurementTimeRange {
-        PER_MINUTE("per_minute", Duration.standardMinutes(1)),
-        PER_HOUR("per_hour", Duration.standardHours(1)),
-        PER_DAY("per_day", Duration.standardDays(1));
+        PER_MINUTE("per_minute", Duration.standardMinutes(1), new SimpleDateFormat("dd.MM.yyyy_HH:mm:00")),
+        PER_HOUR("per_hour", Duration.standardHours(1), new SimpleDateFormat("dd.MM.yyyy_HH:00:00")),
+        PER_DAY("per_day", Duration.standardDays(1), new SimpleDateFormat("dd.MM.yyyy_00:00:00"));
 
-        MeasurementTimeRange(String keyPart, Duration duration) {
+        MeasurementTimeRange(String keyPart, Duration duration, DateFormat dateFormat) {
             this.keyPart = keyPart;
             this.duration = duration;
+            this.dateFormat = dateFormat;
+        }
+
+        String formatTimestamp(long timestamp) {
+            return dateFormat.format(timestamp);
         }
 
         private final String keyPart;
         private final Duration duration;
+        private final DateFormat dateFormat;
     }
 }
