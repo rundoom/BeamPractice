@@ -7,8 +7,7 @@ import org.apache.beam.sdk.transforms.MapElements;
 import org.apache.beam.sdk.transforms.Mean;
 import org.apache.beam.sdk.transforms.Values;
 import org.apache.beam.sdk.transforms.WithTimestamps;
-import org.apache.beam.sdk.transforms.windowing.FixedWindows;
-import org.apache.beam.sdk.transforms.windowing.Window;
+import org.apache.beam.sdk.transforms.windowing.*;
 import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -52,7 +51,7 @@ public class KafkaToPostgresAndRedisLatenessTriggering implements Serializable {
                         .withoutMetadata()
                 )
                 .apply(Values.create())
-                .apply(WithTimestamps.<MeasurementEvent>of(kv -> Instant.ofEpochSecond(kv.timestamp)).withAllowedTimestampSkew(Duration.standardSeconds(30)));
+                .apply(WithTimestamps.<MeasurementEvent>of(kv -> Instant.ofEpochSecond(kv.timestamp)).withAllowedTimestampSkew(Duration.standardSeconds(35)));
     }
 
     private void writeRawToPostgres(PCollection<MeasurementEvent> eventPCollection) {
@@ -79,7 +78,12 @@ public class KafkaToPostgresAndRedisLatenessTriggering implements Serializable {
         eventPCollection
                 .apply(
                         Window.<MeasurementEvent>into(FixedWindows.of(timeRange.duration))
-                                .withAllowedLateness(Duration.standardSeconds(30)).accumulatingFiredPanes()
+                                .withAllowedLateness(Duration.standardSeconds(30))
+                                .accumulatingFiredPanes()
+                                .triggering(Repeatedly.forever(
+                                        AfterWatermark.pastEndOfWindow()
+                                                .withEarlyFirings(AfterPane.elementCountAtLeast(10)))
+                                )
                 )
                 .apply(MapElements.into(kvs(strings(), doubles())).via(m -> KV.of(
                         m.measurementType.name() + ':' + timeRange.keyPart + ':' + m.location + ':' + timeRange.formatTimestamp(m.timestamp * 1000),
