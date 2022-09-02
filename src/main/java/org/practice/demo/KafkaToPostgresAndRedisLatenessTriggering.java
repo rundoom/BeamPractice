@@ -77,7 +77,10 @@ public class KafkaToPostgresAndRedisLatenessTriggering implements Serializable {
 
     private void writeTimeToRedis(PCollection<MeasurementEvent> eventPCollection, KafkaToPostgresAndRedisLatenessTriggering.MeasurementTimeRange timeRange) {
         eventPCollection
-                .apply(Window.into(FixedWindows.of(timeRange.duration)))
+                .apply(
+                        Window.<MeasurementEvent>into(FixedWindows.of(timeRange.duration))
+                                .withAllowedLateness(Duration.standardSeconds(30)).accumulatingFiredPanes()
+                )
                 .apply(MapElements.into(kvs(strings(), doubles())).via(m -> KV.of(
                         m.measurementType.name() + ':' + timeRange.keyPart + ':' + m.location + ':' + timeRange.formatTimestamp(m.timestamp * 1000),
                         m.value)
