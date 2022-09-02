@@ -19,7 +19,7 @@ public class JsonDataProducer implements Serializable {
 
     void convertJson() {
         try {
-            for (int i = 0; i < 100; i++) {
+            for (int i = 0; i < 10; i++) {
                 MeasurementEvent event = generator.generateNEventsToday(1).get(0);
                 String jsonStr = gson.toJson(event);
                 var record = new ProducerRecord<>("event_topic", String.valueOf(event.userId), jsonStr);
