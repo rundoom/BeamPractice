@@ -2,6 +2,7 @@ package org.practice.demo;
 
 import com.google.gson.Gson;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.joda.time.LocalDateTime;
 import org.practice.DataGenerator;
 import org.practice.KafkaManager;
 import org.practice.model.MeasurementEvent;
@@ -20,7 +21,10 @@ public class JsonDataProducer implements Serializable {
     void convertJson() {
         try {
             for (int i = 0; i < 10; i++) {
-                MeasurementEvent event = generator.generateNEventsToday(1).get(0);
+                MeasurementEvent event = generator.generateNEvents(1,
+                        LocalDateTime.now().minusSeconds(30).toDate().getTime()/1000,
+                        LocalDateTime.now().plusSeconds(30).toDate().getTime()/1000
+                ).get(0);
                 String jsonStr = gson.toJson(event);
                 var record = new ProducerRecord<>("event_topic", String.valueOf(event.userId), jsonStr);
                 KafkaManager.getInstance().getProducer().send(record).get();
