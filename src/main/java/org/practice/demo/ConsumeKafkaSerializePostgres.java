@@ -35,7 +35,7 @@ public class ConsumeKafkaSerializePostgres implements Serializable {
                         .withoutMetadata()
                 )
                 .apply(Values.create())
-                .apply(WithTimestamps.of(kv -> Instant.ofEpochSecond(kv.timestamp)))
+                .apply(WithTimestamps.<MeasurementEvent>of(kv -> Instant.ofEpochSecond(kv.timestamp)).withAllowedTimestampSkew(Duration.standardDays(1)))
                 .apply(Window.into(FixedWindows.of(Duration.standardMinutes(1))))
                 .apply(JdbcIO.<MeasurementEvent>write()
                         .withDataSourceConfiguration(JdbcIO.DataSourceConfiguration.create(
