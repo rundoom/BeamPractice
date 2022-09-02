@@ -27,7 +27,7 @@ public class MeasurementEvent {
     @SchemaFieldName("value")
     public double value;
 
-    private DecimalFormat df = new DecimalFormat("####0.00");
+    private final transient DecimalFormat df = new DecimalFormat("####0.00");
 
 
     public MeasurementEvent(long timestamp, int userId, int location, MeasurementType measurementType, double value) {
