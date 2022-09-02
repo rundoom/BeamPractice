@@ -28,7 +28,5 @@ public class JsonDataProducer implements Serializable {
         } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException(e);
         }
-
-
     }
 }
