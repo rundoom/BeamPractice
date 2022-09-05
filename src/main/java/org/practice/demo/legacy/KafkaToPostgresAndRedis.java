@@ -1,20 +1,22 @@
-package org.practice.demo;
+package org.practice.demo.legacy;
 
 import org.apache.beam.sdk.io.jdbc.JdbcIO;
+import org.apache.beam.sdk.io.kafka.KafkaIO;
 import org.apache.beam.sdk.io.redis.RedisIO;
-import org.apache.beam.sdk.transforms.Create;
 import org.apache.beam.sdk.transforms.MapElements;
 import org.apache.beam.sdk.transforms.Mean;
+import org.apache.beam.sdk.transforms.Values;
 import org.apache.beam.sdk.transforms.WithTimestamps;
 import org.apache.beam.sdk.transforms.windowing.FixedWindows;
 import org.apache.beam.sdk.transforms.windowing.Window;
 import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.PCollection;
+import org.apache.kafka.common.serialization.StringDeserializer;
 import org.joda.time.Duration;
 import org.joda.time.Instant;
-import org.practice.DataGenerator;
 import org.practice.beam.BeamManager;
 import org.practice.model.MeasurementEvent;
+import org.practice.model.MeasurementEventDeserializer;
 
 import java.io.Serializable;
 import java.text.DateFormat;
@@ -22,25 +24,35 @@ import java.text.SimpleDateFormat;
 
 import static org.apache.beam.sdk.values.TypeDescriptors.*;
 
-public class RedisAndPostgres implements Serializable {
-    transient DataGenerator generator = new DataGenerator();
+public class KafkaToPostgresAndRedis implements Serializable {
     transient BeamManager beamManager = new BeamManager();
 
     public static void main(String[] args) {
-        new RedisAndPostgres().writeToRedis();
+        new KafkaToPostgresAndRedis().invoke();
     }
 
-    void writeToRedis() {
-        var events = generator.generateNEventsToday(1000);
-        PCollection<MeasurementEvent> eventPCollection = beamManager.getPipeline().apply(Create.of(events))
-                .apply(WithTimestamps.of(kv -> Instant.ofEpochSecond(kv.timestamp)));
+    void invoke() {
+        PCollection<MeasurementEvent> eventPCollection = makeKafkaSource();
 
         writeRawToPostgres(eventPCollection);
-        writeTimeToRedis(eventPCollection, MeasurementTimeRange.PER_DAY);
-        writeTimeToRedis(eventPCollection, MeasurementTimeRange.PER_HOUR);
-        writeTimeToRedis(eventPCollection, MeasurementTimeRange.PER_MINUTE);
+        writeTimeToRedis(eventPCollection, KafkaToPostgresAndRedis.MeasurementTimeRange.PER_DAY);
+        writeTimeToRedis(eventPCollection, KafkaToPostgresAndRedis.MeasurementTimeRange.PER_HOUR);
+        writeTimeToRedis(eventPCollection, KafkaToPostgresAndRedis.MeasurementTimeRange.PER_MINUTE);
 
-        beamManager.getPipeline().run().waitUntilFinish();
+        beamManager.getPipeline().run();
+    }
+
+    private PCollection<MeasurementEvent> makeKafkaSource() {
+        return beamManager.getPipeline()
+                .apply(KafkaIO.<String, MeasurementEvent>read()
+                        .withBootstrapServers("localhost:29092")
+                        .withTopic("event_topic")
+                        .withKeyDeserializer(StringDeserializer.class)
+                        .withValueDeserializer(MeasurementEventDeserializer.class)
+                        .withoutMetadata()
+                )
+                .apply(Values.create())
+                .apply(WithTimestamps.<MeasurementEvent>of(kv -> Instant.ofEpochSecond(kv.timestamp)).withAllowedTimestampSkew(Duration.standardSeconds(30)));
     }
 
     private void writeRawToPostgres(PCollection<MeasurementEvent> eventPCollection) {
@@ -63,7 +75,7 @@ public class RedisAndPostgres implements Serializable {
                 );
     }
 
-    private void writeTimeToRedis(PCollection<MeasurementEvent> eventPCollection, MeasurementTimeRange timeRange) {
+    private void writeTimeToRedis(PCollection<MeasurementEvent> eventPCollection, KafkaToPostgresAndRedis.MeasurementTimeRange timeRange) {
         eventPCollection
                 .apply(Window.into(FixedWindows.of(timeRange.duration)))
                 .apply(MapElements.into(kvs(strings(), doubles())).via(m -> KV.of(

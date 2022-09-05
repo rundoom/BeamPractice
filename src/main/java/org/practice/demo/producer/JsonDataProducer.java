@@ -1,4 +1,4 @@
-package org.practice.demo;
+package org.practice.demo.producer;
 
 import com.google.gson.Gson;
 import org.apache.kafka.clients.producer.ProducerRecord;

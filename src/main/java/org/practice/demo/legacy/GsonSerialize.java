@@ -1,4 +1,4 @@
-package org.practice.demo;
+package org.practice.demo.legacy;
 
 import com.google.gson.Gson;
 import org.practice.DataGenerator;

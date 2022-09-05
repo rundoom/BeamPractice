@@ -1,4 +1,4 @@
-package org.practice.demo;
+package org.practice.demo.legacy;
 
 import org.apache.beam.sdk.io.TextIO;
 import org.apache.beam.sdk.transforms.Create;

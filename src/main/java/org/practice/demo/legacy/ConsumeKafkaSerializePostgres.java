@@ -1,4 +1,4 @@
-package org.practice.demo;
+package org.practice.demo.legacy;
 
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.io.jdbc.JdbcIO;
