@@ -33,7 +33,7 @@ public class ProtobufDataProducer implements Serializable {
                         .setValue(event.value).build();
 
                 byte[] protoBytes = protoEvent.toByteArray();
-                var record = new ProducerRecord<String, byte[]>("event_topic", String.valueOf(event.userId), protoBytes);
+                var record = new ProducerRecord<String, byte[]>("event_topic_proto", String.valueOf(event.userId), protoBytes);
                 KafkaManagerBytes.getInstance().getProducer().send(record).get();
             }
         } catch (InterruptedException | ExecutionException e) {
