@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package proto;
+
+option java_package = "org.practice.proto";
+option java_outer_classname = "MeasurementEventProto";
+
+
+message MeasurementEvent {
+  int32 userId = 1;
+  int64 timestamp = 2;
+  int32 location = 3;
+  MeasurementType measurementType = 4;
+  double value = 5;
+}
+
+enum MeasurementType {
+  CO2 = 0;
+  TEMPERATURE = 1;
+  PRESSURE = 2;
+  HUMIDITY = 3;
+}
