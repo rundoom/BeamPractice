@@ -95,9 +95,9 @@ public class KafkaToPostgresAndRedisLatenessTriggeringFromProto implements Seria
     }
 
     private enum MeasurementTimeRange {
-        PER_MINUTE("per_minute", Duration.standardMinutes(1), new SimpleDateFormat("dd.MM.yyyy_HH:mm:00")),
-        PER_HOUR("per_hour", Duration.standardHours(1), new SimpleDateFormat("dd.MM.yyyy_HH:00:00")),
-        PER_DAY("per_day", Duration.standardDays(1), new SimpleDateFormat("dd.MM.yyyy_00:00:00"));
+        PER_MINUTE("minute", Duration.standardMinutes(1), new SimpleDateFormat("dd.MM.yyyy_HH:mm:00")),
+        PER_HOUR("hour", Duration.standardHours(1), new SimpleDateFormat("dd.MM.yyyy_HH:00:00")),
+        PER_DAY("day", Duration.standardDays(1), new SimpleDateFormat("dd.MM.yyyy_00:00:00"));
 
         MeasurementTimeRange(String keyPart, Duration duration, DateFormat dateFormat) {
             this.keyPart = keyPart;
