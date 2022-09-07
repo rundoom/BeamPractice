@@ -2,7 +2,7 @@ package org.practice.demo.legacy;
 
 import com.google.gson.Gson;
 import org.practice.DataGenerator;
-import org.practice.model.MeasurementEvent;
+import org.practice.demo.legacy.model.MeasurementEvent;
 
 import java.io.Serializable;
 

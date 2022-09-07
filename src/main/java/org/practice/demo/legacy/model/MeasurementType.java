@@ -1,4 +1,4 @@
-package org.practice.model;
+package org.practice.demo.legacy.model;
 
 public enum MeasurementType {
     CO2,

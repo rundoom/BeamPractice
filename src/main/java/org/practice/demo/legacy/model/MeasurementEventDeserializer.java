@@ -1,4 +1,4 @@
-package org.practice.model;
+package org.practice.demo.legacy.model;
 
 import com.google.gson.Gson;
 import org.apache.kafka.common.serialization.Deserializer;

@@ -1,4 +1,4 @@
-package org.practice;
+package org.practice.demo.legacy;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;

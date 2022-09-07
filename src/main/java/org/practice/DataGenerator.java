@@ -1,7 +1,7 @@
 package org.practice;
 
-import org.practice.model.MeasurementEvent;
-import org.practice.model.MeasurementType;
+import org.practice.demo.legacy.model.MeasurementEvent;
+import org.practice.demo.legacy.model.MeasurementType;
 
 import java.time.LocalDate;
 import java.time.LocalTime;

@@ -1,11 +1,11 @@
-package org.practice.demo.producer;
+package org.practice.demo.legacy.producer;
 
 import com.google.gson.Gson;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.joda.time.LocalDateTime;
 import org.practice.DataGenerator;
-import org.practice.KafkaManager;
-import org.practice.model.MeasurementEvent;
+import org.practice.demo.legacy.KafkaManager;
+import org.practice.demo.legacy.model.MeasurementEvent;
 
 import java.io.Serializable;
 import java.util.concurrent.ExecutionException;

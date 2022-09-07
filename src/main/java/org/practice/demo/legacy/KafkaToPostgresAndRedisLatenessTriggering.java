@@ -1,4 +1,4 @@
-package org.practice.demo;
+package org.practice.demo.legacy;
 
 import org.apache.beam.sdk.io.jdbc.JdbcIO;
 import org.apache.beam.sdk.io.kafka.KafkaIO;
@@ -14,8 +14,8 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.joda.time.Duration;
 import org.joda.time.Instant;
 import org.practice.beam.BeamManager;
-import org.practice.model.MeasurementEvent;
-import org.practice.model.MeasurementEventDeserializer;
+import org.practice.demo.legacy.model.MeasurementEvent;
+import org.practice.demo.legacy.model.MeasurementEventDeserializer;
 
 import java.io.Serializable;
 import java.text.DateFormat;

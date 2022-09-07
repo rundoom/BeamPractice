@@ -1,4 +1,4 @@
-package org.practice.model;
+package org.practice.demo.legacy.model;
 
 import org.apache.beam.sdk.coders.AvroCoder;
 import org.apache.beam.sdk.coders.DefaultCoder;

@@ -10,7 +10,7 @@ import org.joda.time.Duration;
 import org.joda.time.Instant;
 import org.practice.DataGenerator;
 import org.practice.beam.BeamManager;
-import org.practice.model.MeasurementEvent;
+import org.practice.demo.legacy.model.MeasurementEvent;
 
 import java.io.Serializable;
 

@@ -4,7 +4,7 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.joda.time.LocalDateTime;
 import org.practice.DataGenerator;
 import org.practice.KafkaManagerBytes;
-import org.practice.model.MeasurementEvent;
+import org.practice.demo.legacy.model.MeasurementEvent;
 import org.practice.proto.MeasurementEventProto;
 
 import java.io.Serializable;
