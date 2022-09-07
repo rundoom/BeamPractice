@@ -12,6 +12,9 @@ import org.apache.beam.sdk.transforms.WithTimestamps;
 import org.apache.beam.sdk.transforms.windowing.*;
 import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.PCollection;
+import org.apache.beam.vendor.guava.v26_0_jre.com.google.common.base.Strings;
+import org.apache.beam.vendor.guava.v26_0_jre.com.google.common.collect.ImmutableListMultimap;
+import org.apache.beam.vendor.guava.v26_0_jre.com.google.common.collect.ListMultimap;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.joda.time.Duration;
 import org.joda.time.Instant;
@@ -25,11 +28,14 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
 import static org.apache.beam.sdk.values.TypeDescriptors.*;
+import static org.apache.beam.vendor.guava.v26_0_jre.com.google.common.base.Preconditions.checkArgument;
 
 public class KafkaToPostgresAndRedisLatenessTriggeringFromProto implements Serializable {
     transient BeamManager beamManager;
+    static ListMultimap<String, String> listMultimap;
 
     public static void main(String[] args) {
+        listMultimap = parseCommandLine(args);
         KafkaToPostgresAndRedisLatenessTriggeringFromProto beam = new KafkaToPostgresAndRedisLatenessTriggeringFromProto();
         beam.beamManager = new BeamManager(PipelineOptionsFactory.fromArgs(args).as(PracticeOptions.class));
         beam.invoke();
@@ -51,8 +57,8 @@ public class KafkaToPostgresAndRedisLatenessTriggeringFromProto implements Seria
         PracticeOptions options = pipeline.getOptions().as(PracticeOptions.class);
         return pipeline
                 .apply(KafkaIO.<String, MeasurementEventProto.MeasurementEvent>read()
-                        .withBootstrapServers(options.getKafkaBootstrapServer().get())
-                        .withTopic(options.getKafkaTopic().get())
+                        .withBootstrapServers(listMultimap.get("kafkaBootstrapServer").get(0))
+                        .withTopic(listMultimap.get("kafkaTopic").get(0))
                         .withKeyDeserializer(StringDeserializer.class)
                         .withValueDeserializer(MeasurementEventDeserializerProto.class)
                         .withoutMetadata()
@@ -68,9 +74,9 @@ public class KafkaToPostgresAndRedisLatenessTriggeringFromProto implements Seria
                 .apply(JdbcIO.<MeasurementEventProto.MeasurementEvent>write()
                         .withDataSourceConfiguration(JdbcIO.DataSourceConfiguration.create(
                                         "org.postgresql.Driver",
-                                        options.getPostgresUrl().get())
-                                .withUsername(options.getPostgresUsername().get())
-                                .withPassword(options.getPostgresPassword().get()))
+                                        listMultimap.get("postgresUrl").get(0))
+                                .withUsername(listMultimap.get("postgresUsername").get(0))
+                                .withPassword(listMultimap.get("postgresPassword").get(0)))
                         .withStatement("insert into measurement_event values(?, ?, ?, ?, ?)")
                         .withPreparedStatementSetter((JdbcIO.PreparedStatementSetter<MeasurementEventProto.MeasurementEvent>) (element, query) -> {
                             query.setInt(1, element.getUserId());
@@ -106,7 +112,7 @@ public class KafkaToPostgresAndRedisLatenessTriggeringFromProto implements Seria
                 ))
                 .apply(Mean.perKey())
                 .apply(MapElements.into(kvs(strings(), strings())).via(m -> KV.of(m.getKey(), String.valueOf(m.getValue()))))
-                .apply(RedisIO.write().withEndpoint(options.getRedisHost().get(), options.getRedisPort().get()));
+                .apply(RedisIO.write().withEndpoint(listMultimap.get("redisHost").get(0), Integer.parseInt(listMultimap.get("redisPort").get(0))));
     }
 
     private enum MeasurementTimeRange {
@@ -127,5 +133,26 @@ public class KafkaToPostgresAndRedisLatenessTriggeringFromProto implements Seria
         private final String keyPart;
         private final Duration duration;
         private final DateFormat dateFormat;
+    }
+
+    private static ListMultimap<String, String> parseCommandLine(
+            String[] args) {
+        ImmutableListMultimap.Builder<String, String> builder = ImmutableListMultimap.builder();
+        for (String arg : args) {
+            if (Strings.isNullOrEmpty(arg)) {
+                continue;
+            }
+            checkArgument(arg.startsWith("--"), "Argument '%s' does not begin with '--'", arg);
+            int index = arg.indexOf('=');
+            // Make sure that '=' isn't the first character after '--' or the last character
+            checkArgument(
+                    index != 2, "Argument '%s' starts with '--=', empty argument name not allowed", arg);
+            if (index > 0) {
+                builder.put(arg.substring(2, index), arg.substring(index + 1));
+            } else {
+                builder.put(arg.substring(2), "true");
+            }
+        }
+        return builder.build();
     }
 }

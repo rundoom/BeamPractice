@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'com.google.protobuf' version "0.8.19"
+    id "application"
 }
 
 group 'org.practice'
@@ -29,6 +30,10 @@ dependencies {
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
+}
+
+application {
+    mainClassName = "org.practice.demo.KafkaToPostgresAndRedisLatenessTriggeringFromProto"
 }
 
 test {
