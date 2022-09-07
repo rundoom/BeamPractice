@@ -80,9 +80,10 @@ public class KafkaToPostgresAndRedisLatenessTriggeringFromProto implements Seria
                         Window.<MeasurementEventProto.MeasurementEvent>into(FixedWindows.of(timeRange.duration))
                                 .withAllowedLateness(Duration.standardSeconds(30))
                                 .accumulatingFiredPanes()
-                                .triggering(Repeatedly.forever(
+                                .triggering(
                                         AfterWatermark.pastEndOfWindow()
-                                                .withEarlyFirings(AfterPane.elementCountAtLeast(10)))
+                                                .withEarlyFirings(AfterPane.elementCountAtLeast(10))
+                                                .withLateFirings(AfterProcessingTime.pastFirstElementInPane().plusDelayOf(Duration.standardSeconds(30)))
                                 )
                 )
                 //Make PCollection<EventGroupingKey, Event>
@@ -91,7 +92,7 @@ public class KafkaToPostgresAndRedisLatenessTriggeringFromProto implements Seria
                 //EventGroupingKey.toString() + end of window timestamp
                 //Это уже пишем в Редис
                 .apply(MapElements.into(kvs(strings(), doubles())).via(m -> KV.of(
-                        m.getMeasurementType().name() + ':' + timeRange.keyPart + ':' + m.getLocation() + ':' + timeRange.formatTimestamp(m.getTimestamp() * 1000),
+                        m.getMeasurementType().name() + '#' + timeRange.keyPart + '#' + m.getLocation(),
                         m.getValue())
                 ))
                 .apply(Mean.perKey())
