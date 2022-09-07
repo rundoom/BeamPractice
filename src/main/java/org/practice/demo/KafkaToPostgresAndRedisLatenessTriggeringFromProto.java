@@ -85,6 +85,11 @@ public class KafkaToPostgresAndRedisLatenessTriggeringFromProto implements Seria
                                                 .withEarlyFirings(AfterPane.elementCountAtLeast(10)))
                                 )
                 )
+                //Make PCollection<EventGroupingKey, Event>
+                //Group per key нужно написать кастомный комбайнер Combine.perKey
+                //Add end of window timestamp
+                //EventGroupingKey.toString() + end of window timestamp
+                //Это уже пишем в Редис
                 .apply(MapElements.into(kvs(strings(), doubles())).via(m -> KV.of(
                         m.getMeasurementType().name() + ':' + timeRange.keyPart + ':' + m.getLocation() + ':' + timeRange.formatTimestamp(m.getTimestamp() * 1000),
                         m.getValue())
