@@ -28,17 +28,14 @@ import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import static org.apache.beam.sdk.values.TypeDescriptors.*;
 import static org.apache.beam.vendor.guava.v26_0_jre.com.google.common.base.Preconditions.checkArgument;
 
 public class KafkaToPostgresAndRedisLatenessTriggeringFromProto implements Serializable {
     transient BeamManager beamManager;
-    static ListMultimap<String, String> listMultimap;
 
     public static void main(String[] args) {
-        listMultimap = parseCommandLine(args);
         KafkaToPostgresAndRedisLatenessTriggeringFromProto beam = new KafkaToPostgresAndRedisLatenessTriggeringFromProto();
         beam.beamManager = new BeamManager(PipelineOptionsFactory.fromArgs(args).as(PracticeOptions.class));
 
@@ -65,14 +62,14 @@ public class KafkaToPostgresAndRedisLatenessTriggeringFromProto implements Seria
         PracticeOptions options = pipeline.getOptions().as(PracticeOptions.class);
         return pipeline
                 .apply(KafkaIO.<String, MeasurementEventProto.MeasurementEvent>read()
-                        .withBootstrapServers(listMultimap.get("kafkaBootstrapServer").get(0))
-                        .withTopic(listMultimap.get("kafkaTopic").get(0))
+                        .withBootstrapServers(options.getKafkaBootstrapServer())
+                        .withTopic(options.getKafkaTopic())
                         .withKeyDeserializer(StringDeserializer.class)
                         .withValueDeserializer(MeasurementEventDeserializerProto.class)
                         .withoutMetadata()
                 )
                 .apply(Values.create())
-                .apply(WithTimestamps.<MeasurementEventProto.MeasurementEvent>of(kv -> Instant.ofEpochSecond(kv.getTimestamp())).withAllowedTimestampSkew(Duration.standardSeconds(35)));
+                .apply(WithTimestamps.<MeasurementEventProto.MeasurementEvent>of(kv -> Instant.ofEpochSecond(kv.getTimestamp())).withAllowedTimestampSkew(Duration.standardSeconds(240)));
     }
 
     private void writeRawToPostgres(PCollection<MeasurementEventProto.MeasurementEvent> eventPCollection) {
@@ -82,9 +79,9 @@ public class KafkaToPostgresAndRedisLatenessTriggeringFromProto implements Seria
                 .apply(JdbcIO.<MeasurementEventProto.MeasurementEvent>write()
                         .withDataSourceConfiguration(JdbcIO.DataSourceConfiguration.create(
                                         "org.postgresql.Driver",
-                                        listMultimap.get("postgresUrl").get(0))
-                                .withUsername(listMultimap.get("postgresUsername").get(0))
-                                .withPassword(listMultimap.get("postgresPassword").get(0)))
+                                        options.getPostgresUrl())
+                                .withUsername(options.getPostgresUsername())
+                                .withPassword(options.getPostgresPassword()))
                         .withStatement("insert into measurement_event values(?, ?, ?, ?, ?)")
                         .withPreparedStatementSetter((JdbcIO.PreparedStatementSetter<MeasurementEventProto.MeasurementEvent>) (element, query) -> {
                             query.setInt(1, element.getUserId());
@@ -120,7 +117,7 @@ public class KafkaToPostgresAndRedisLatenessTriggeringFromProto implements Seria
                 ))
                 .apply(Mean.perKey())
                 .apply(MapElements.into(kvs(strings(), strings())).via(m -> KV.of(m.getKey(), String.valueOf(m.getValue()))))
-                .apply(RedisIO.write().withEndpoint(listMultimap.get("redisHost").get(0), Integer.parseInt(listMultimap.get("redisPort").get(0))));
+                .apply(RedisIO.write().withEndpoint(options.getRedisHost(), options.getRedisPort()));
     }
 
     private enum MeasurementTimeRange {
