@@ -19,6 +19,7 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.joda.time.Duration;
 import org.joda.time.Instant;
 import org.practice.beam.BeamManager;
+import org.practice.demo.producer.ProtobufDataProducerInfinite;
 import org.practice.model.MeasurementEventDeserializerProto;
 import org.practice.model.PracticeOptions;
 import org.practice.proto.MeasurementEventProto;
@@ -26,6 +27,8 @@ import org.practice.proto.MeasurementEventProto;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import static org.apache.beam.sdk.values.TypeDescriptors.*;
 import static org.apache.beam.vendor.guava.v26_0_jre.com.google.common.base.Preconditions.checkArgument;
@@ -38,6 +41,11 @@ public class KafkaToPostgresAndRedisLatenessTriggeringFromProto implements Seria
         listMultimap = parseCommandLine(args);
         KafkaToPostgresAndRedisLatenessTriggeringFromProto beam = new KafkaToPostgresAndRedisLatenessTriggeringFromProto();
         beam.beamManager = new BeamManager(PipelineOptionsFactory.fromArgs(args).as(PracticeOptions.class));
+
+        Executors.newSingleThreadExecutor().submit(
+                () -> new ProtobufDataProducerInfinite().generateProtoToKafka()
+        );
+
         beam.invoke();
     }
 

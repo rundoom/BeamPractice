@@ -1,8 +1,8 @@
-package org.practice.demo.producer;
+package org.practice.demo.legacy.producer;
 
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.joda.time.LocalDateTime;
-import org.practice.DataGenerator;
+import org.practice.demo.legacy.DataGenerator;
 import org.practice.KafkaManagerBytes;
 import org.practice.demo.legacy.model.MeasurementEvent;
 import org.practice.proto.MeasurementEventProto;

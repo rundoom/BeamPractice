@@ -7,7 +7,6 @@ import org.apache.beam.sdk.transforms.Mean;
 import org.apache.beam.sdk.transforms.ToString;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.values.TypeDescriptor;
-import org.practice.DataGenerator;
 import org.practice.beam.BeamManager;
 import org.practice.demo.legacy.model.MeasurementEvent;
 

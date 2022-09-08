@@ -1,4 +1,4 @@
-package org.practice;
+package org.practice.demo.legacy;
 
 import org.practice.demo.legacy.model.MeasurementEvent;
 import org.practice.demo.legacy.model.MeasurementType;

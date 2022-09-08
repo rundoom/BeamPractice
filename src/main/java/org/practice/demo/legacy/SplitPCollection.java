@@ -8,7 +8,6 @@ import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.PCollection;
 import org.joda.time.Duration;
 import org.joda.time.Instant;
-import org.practice.DataGenerator;
 import org.practice.beam.BeamManager;
 import org.practice.demo.legacy.model.MeasurementEvent;
 
