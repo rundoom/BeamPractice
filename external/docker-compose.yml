@@ -23,7 +23,7 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
   postgres:
-    image: postgres
+    image: postgres-for-beam
     restart: always
     ports:
       - "5432:5432"

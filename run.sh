@@ -1,6 +1,11 @@
 #!/bin/bash
 
 
+if [[ "$(docker image inspect postgres-for-beam)" == "[]" ]]; then
+  docker build -f external/DockerfilePostrgres -t postgres-for-beam external/
+  echo "building postgres-for-beam"
+fi
+
 docker-compose --file external/docker-compose.yml up -d
 
 
